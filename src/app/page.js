@@ -20,6 +20,7 @@ export default function Home() {
   const [uploading, setUploading] = useState(false);
   const [fileKey, setFileKey] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef(null);
 
   const handleButtonClick = () => {
@@ -40,6 +41,15 @@ export default function Home() {
 
   const handleUploadImage = async () => {
     if (selectedImage) {
+      const fileSizeInMB = selectedImage.size / (1024 * 1024);
+      if (fileSizeInMB > 10) {
+        setErrorMessage(
+          "Image size exceeds 10MB. Please choose a different image."
+        );
+        setShowModal(true);
+        return;
+      }
+
       setUploading(true);
       storageRef = ref(imageDb, `images/${selectedImage.name}`);
       const uploadTask = uploadBytesResumable(storageRef, selectedImage);
@@ -172,15 +182,23 @@ export default function Home() {
           />
         </div>
         <div className="text-center mt-3 ">
-          <Link
-            className="text-xs bg-green-700 p-2 rounded-xl "
-            href={"/ViewImages"}
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            style={{ padding: "10px" }}
           >
-            View Uploaded Images
-          </Link>
+            <Link
+              className="text-xs bg-green-700 p-2 rounded-xl "
+              href={"/ViewImages"}
+            >
+              View Uploaded Images
+            </Link>
+          </motion.div>
         </div>
       </div>
-      {showModal && <Modal closeModal={closeModal} />}
+      {showModal && (
+        <Modal closeModal={closeModal} errorMessage={errorMessage} />
+      )}
     </main>
   );
 }
